@@ -1,13 +1,13 @@
 CFLAGS = -O0
 
-all: bitcnt tags
+all: bitpopcnt tags
 
-bitcnt: bitcnt.c
+bitpopcnt: bitpopcnt.c
 	$(CC) $(CFLAGS) -Wall $< -o $@
 
-tags: bitcnt.c
+tags: bitpopcnt.c
 	ctags -R .
 
 .PHONY:
 clean:
-	rm -vf bitcnt
+	rm -vf bitpopcnt

@@ -1,3 +1,7 @@
+/*
+ * Bit population count subprograms.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -11,7 +15,7 @@ uint64_t rdtsc(void)
 	return low | ((uint64_t) high) << 32;
 }
 
-int bitcnt_1(unsigned v)
+int popcnt_1(unsigned v)
 {
 	int cnt = 0;
 	while (v) {
@@ -21,7 +25,7 @@ int bitcnt_1(unsigned v)
 	return cnt;
 }
 
-int bitcnt_2(unsigned v)
+int popcnt_2(unsigned v)
 {
 	int cnt = 0;
 	while (v) {
@@ -31,7 +35,7 @@ int bitcnt_2(unsigned v)
 	return cnt;
 }
 
-static inline int bitcnt4(int v)
+static inline int popcnt_3_x(int v)
 {
 	switch (v & 0xf) {
 	case 0x0: return 0;
@@ -54,12 +58,12 @@ static inline int bitcnt4(int v)
 	return 0;
 }
 
-int bitcnt_3(unsigned v)
+int popcnt_3(unsigned v)
 {
 	int cnt = 0;
 
 	while (v) {
-		cnt += bitcnt4(v & 0xf);
+		cnt += popcnt_3_x(v & 0xf);
 		v >>= 4;
 	}
 
@@ -72,30 +76,20 @@ int main(int argc, char **argv, char **envp)
 	int c_1, c_2, c_3;
 	long t_1, t_2, t_3;
 
-	int vi = -2;
-	unsigned vu = 1 | (1<<31);
-
-	printf("vi i %i, u %u, x %x\n", (int) vi, (unsigned) vi, vi);
-	printf("vu i %i, u %u, x %x\n", (int) vu, (unsigned) vu, vu);
-
 	/* warm-up */
 	c_1 = c_2 = c_3 = 0;
-	for (i = 0; i < N; i++) {
-		c_3 = bitcnt_1(i);
-		printf("bitcnt_1 %i %i\n", i, c_3);
-		c_1 += c_3;
 
-		//c_1 += bitcnt_2(rand());
-	}
+	srand(314);
 	for (i = 0; i < N; i++) {
-		c_3 = bitcnt_1(i);
-		printf("bitcnt_2 %i %i\n", i, c_3);
-		c_2 += c_3;
-
-		//c_2 += bitcnt_2(rand());
+		c_1 += popcnt_2(rand());
 	}
+	srand(314);
 	for (i = 0; i < N; i++) {
-		c_3 += bitcnt_3(rand());
+		c_2 += popcnt_2(rand());
+	}
+	srand(314);
+	for (i = 0; i < N; i++) {
+		c_3 += popcnt_3(rand());
 	}
 
 	printf("t_1\tt_2\tt_3\n");
@@ -106,7 +100,7 @@ int main(int argc, char **argv, char **envp)
 		c_1 = 0;
 		t_1 = rdtsc();
 		for (i = 0; i < n; i++) {
-			c_1 += bitcnt_1(rand());
+			c_1 += popcnt_1(rand());
 		}
 		t_1 = rdtsc() - t_1;
 
@@ -114,17 +108,17 @@ int main(int argc, char **argv, char **envp)
 		c_2 = 0;
 		t_2 = rdtsc();
 		for (i = 0; i < n; i++) {
-			c_2 += bitcnt_2(rand());
+			c_2 += popcnt_2(rand());
 		}
 		t_2 = rdtsc() - t_2;
 
-		/*srand(314);
+		srand(314);
 		c_3 = 0;
 		t_3 = rdtsc();
 		for (i = 0; i < n; i++) {
-			c_3 += bitcnt_3(rand());
+			c_3 += popcnt_3(rand());
 		}
-		t_3 = rdtsc() - t_3;*/
+		t_3 = rdtsc() - t_3;
 
 		if (c_1 == c_2 && c_2 == c_3) {
 			printf("%.2f\t%.2f\t%.2f\n",
@@ -135,7 +129,7 @@ int main(int argc, char **argv, char **envp)
 			printf("c_1 %i t_1 %lu\n", c_1, t_1);
 			printf("c_2 %i t_2 %lu\n", c_2, t_2);
 			printf("c_3 %i t_3 %lu\n", c_3, t_3);
-			//break;
+			break;
 		}
 	}
 

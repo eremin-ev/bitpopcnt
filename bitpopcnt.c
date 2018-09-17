@@ -88,7 +88,7 @@ int popcnt_3(unsigned v)
  * 1110 0xe
  * 1111 0xf
  *
- * The key idea two-bit integer v = xy:
+ * The key idea for two-bit integer value v = xy is the following:
  *
  *	v & 2				// x0
  *	v & 1				// 0y
